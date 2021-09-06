@@ -7,7 +7,7 @@ async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     const prismaService = app.get(prisma_service_1.PrismaService);
     prismaService.enableShutdownHooks(app);
-    await app.listen(3000);
+    await app.listen(3030);
 }
 bootstrap();
 //# sourceMappingURL=main.js.map

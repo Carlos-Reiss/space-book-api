@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/services/prisma.service';
+import { Prisma } from '.prisma/client';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { PrismaService } from '../../../prisma/services/prisma.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 
@@ -7,10 +8,23 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 export class UsersService {
   constructor(readonly prisma: PrismaService) {}
 
-  create(createUserDto: CreateUserDto) {
-    return this.prisma.user.create({
-      data: createUserDto,
-    });
+  async create(createUserDto: CreateUserDto) {
+    try {
+      const user = await this.prisma.user.create({
+        data: createUserDto,
+      });
+
+      return user;
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (
+          error.code === 'P2002' &&
+          (error.meta as any)?.target[0] === 'email'
+        ) {
+          throw new BadRequestException('email inválido');
+        }
+      }
+    }
   }
 
   findAll() {
@@ -20,7 +34,7 @@ export class UsersService {
   findOne(id: string) {
     return this.prisma.user.findUnique({
       where: {
-        id: id,
+        id,
       },
     });
   }

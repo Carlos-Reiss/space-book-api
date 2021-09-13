@@ -1,5 +1,9 @@
-import { Prisma } from '.prisma/client';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { User } from '.prisma/client';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../prisma/services/prisma.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
@@ -8,35 +12,41 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 export class UsersService {
   constructor(readonly prisma: PrismaService) {}
 
-  async create(createUserDto: CreateUserDto) {
-    try {
-      const user = await this.prisma.user.create({
-        data: createUserDto,
-      });
+  async create(data: CreateUserDto): Promise<User> {
+    const userFindEmailExist = await this.prisma.user.findUnique({
+      where: { email: data.email },
+      select: {
+        email: true,
+        id: true,
+        username: true,
+      },
+    });
 
-      return user;
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (
-          error.code === 'P2002' &&
-          (error.meta as any)?.target[0] === 'email'
-        ) {
-          throw new BadRequestException('email inválido');
-        }
-      }
+    if (userFindEmailExist) {
+      throw new BadRequestException('user email already exist in database');
     }
+
+    const user = await this.prisma.user.create({
+      data: data,
+    });
+    return user;
   }
 
-  findAll() {
+  async findAll(): Promise<User[]> {
     return this.prisma.user.findMany({});
   }
 
-  findOne(id: string) {
-    return this.prisma.user.findUnique({
+  async findOne(id: string): Promise<User> {
+    const user = await this.prisma.user.findUnique({
       where: {
         id,
       },
     });
+
+    if (!user) {
+      throw new NotFoundException('user not found in database');
+    }
+    return user;
   }
 
   update(id: string, updateUserDto: UpdateUserDto) {

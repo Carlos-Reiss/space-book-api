@@ -1,25 +1,19 @@
-import { User } from '.prisma/client';
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/services/prisma.service';
-import { CreateUserDto } from '../dto/create-user.dto';
-import { UpdateUserDto } from '../dto/update-user.dto';
+import { CreateUserDto, UpdateUserDto } from '../dto';
+import { UserEntity } from '../entities/user.entity';
 
 @Injectable()
 export class UsersService {
   constructor(readonly prisma: PrismaService) {}
 
-  async create(data: CreateUserDto): Promise<User> {
+  async create(data: CreateUserDto): Promise<Omit<UserEntity, 'password'>> {
     const userFindEmailExist = await this.prisma.user.findUnique({
       where: { email: data.email },
-      select: {
-        email: true,
-        id: true,
-        username: true,
-      },
     });
 
     if (userFindEmailExist) {
@@ -28,18 +22,36 @@ export class UsersService {
 
     const user = await this.prisma.user.create({
       data: data,
+      select: {
+        id: true,
+        email: true,
+        username: true,
+      },
     });
     return user;
   }
 
-  async findAll(): Promise<User[]> {
-    return this.prisma.user.findMany({});
+  async findAll(): Promise<Omit<UserEntity, 'password'>[]> {
+    const users = await this.prisma.user.findMany({
+      where: {},
+      select: {
+        id: true,
+        email: true,
+        username: true,
+      },
+    });
+    return users;
   }
 
-  async findOne(id: string): Promise<User> {
+  async findOne(id: string): Promise<Omit<UserEntity, 'password'>> {
     const user = await this.prisma.user.findUnique({
       where: {
         id,
+      },
+      select: {
+        id: true,
+        email: true,
+        username: true,
       },
     });
 
@@ -49,16 +61,48 @@ export class UsersService {
     return user;
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
-    return this.prisma.user.update({
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+  ): Promise<Omit<UserEntity, 'password'>> {
+    const findAndUser = await this.prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!findAndUser) {
+      throw new NotFoundException('user not found in database');
+    }
+
+    const user = await this.prisma.user.update({
       where: { id },
       data: updateUserDto,
+      select: {
+        id: true,
+        email: true,
+        username: true,
+      },
     });
+
+    return user;
   }
 
-  remove(id: string) {
-    return this.prisma.user.delete({
+  async remove(id: string): Promise<Omit<UserEntity, 'password'>> {
+    const findAndUser = await this.prisma.user.findUnique({
       where: { id },
     });
+
+    if (!findAndUser) {
+      throw new NotFoundException('user not found in database');
+    }
+    const user = await this.prisma.user.delete({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+      },
+    });
+
+    return user;
   }
 }

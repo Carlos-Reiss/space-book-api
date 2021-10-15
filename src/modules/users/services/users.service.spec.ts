@@ -1,17 +1,28 @@
+import { User } from '.prisma/client';
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { v4 as uuid } from 'uuid';
 import { PrismaService } from '../../../prisma/services/prisma.service';
 import {
   Context,
   createMockContext,
   MockContext,
 } from './../../../context/test/context';
-import { UserEntity } from './../entities/user.entity';
 import { UsersService } from './users.service';
 
 describe('UsersService', () => {
   let service: UsersService;
   let mockCtx: MockContext;
   let ctx: Context;
+
+  const user: User = {
+    id: uuid(),
+    username: 'carlos',
+    email: 'carlos@gmail.com',
+    password: '123',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
   beforeEach(async () => {
     mockCtx = createMockContext();
@@ -28,18 +39,26 @@ describe('UsersService', () => {
   });
 
   it('should create new user', async () => {
-    const user: UserEntity = {
-      username: 'carlos',
-      email: 'carlos@gmail.com',
-      password: '123',
-    };
-    mockCtx.prisma.user.create.mockResolvedValue({
-      id: '5500eea8-f513-469c-96a3-c6a7b47c26c1',
-      ...user,
+    mockCtx.prisma.user.create.mockResolvedValue(user);
+    await expect(service.create(user)).resolves.toStrictEqual(user);
+  });
+
+  it('should not be possible update a user', async () => {
+    mockCtx.prisma.user.update.mockImplementation(() => {
+      throw new NotFoundException('user not found in database');
     });
-    await expect(service.create(user)).resolves.toStrictEqual({
-      id: '5500eea8-f513-469c-96a3-c6a7b47c26c1',
-      ...user,
+    await expect(service.update(user.id, user)).rejects.toThrow(
+      'user not found in database',
+    );
+  });
+
+  it('should be not possible to delete the user', async () => {
+    mockCtx.prisma.user.delete.mockImplementation(() => {
+      throw new NotFoundException('user not found in database');
     });
+
+    await expect(service.remove(user.id)).rejects.toThrow(
+      'user not found in database',
+    );
   });
 });

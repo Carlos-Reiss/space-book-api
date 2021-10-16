@@ -5,9 +5,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './modules/users/users.module';
 import { PrismaService } from './prisma/services/prisma.service';
-
+import { ConfigurationModule } from './infra/config/configuration.module';
 @Module({
-  imports: [UsersModule],
+  imports: [UsersModule, ConfigurationModule],
   controllers: [AppController],
   providers: [
     AppService,

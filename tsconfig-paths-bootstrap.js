@@ -5,5 +5,16 @@ const tsConfigPaths = require('tsconfig-paths');
 const baseUrl = './dist'; // Either absolute or relative path. If relative it's resolved to current working directory.
 tsConfigPaths.register({
   baseUrl,
-  paths: tsConfig.compilerOptions.paths,
+  paths: Object.keys(paths).reduce(
+    (agg, key) => ({
+      ...agg,
+      [key]: paths[key].map((p) =>
+        p.replace(
+          tsConfig.compilerOptions.baseUrl,
+          tsConfig.compilerOptions.outDir,
+        ),
+      ),
+    }),
+    {},
+  ),
 });

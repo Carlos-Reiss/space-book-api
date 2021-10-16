@@ -1,4 +1,6 @@
-{
+{ 
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     "module": "commonjs",
     "declaration": true,
@@ -18,10 +20,7 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@Infra/*":["./src/infra/*"],
-      "@Modules/*":["./src/modules/*"],
-      "@Prisma/*": ["./src/prisma/*"],
-      "@Context/*": ["./src/context/*"]
+      "@/*": ["./src/*"]
     }
   }
 }

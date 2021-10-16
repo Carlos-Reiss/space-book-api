@@ -1,14 +1,14 @@
 import { User } from '.prisma/client';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaService } from '@Prisma/services/prisma.service';
+import { PrismaService } from '@/prisma/services/prisma.service';
 import { v4 as uuid } from 'uuid';
 
 import {
   Context,
   createMockContext,
   MockContext,
-} from './../../../context/test/context';
+} from '@/context/test/context';
 import { UsersService } from './users.service';
 
 describe('UsersService', () => {

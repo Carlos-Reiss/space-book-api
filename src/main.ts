@@ -1,9 +1,9 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { HttpExceptionHandler } from './infra/ExceptionHandler/index';
-import * as dotenv from 'dotenv';
+import { HttpExceptionHandler } from '@Infra/ExceptionHandler';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from './prisma/services/prisma.service';
+import { NestFactory } from '@nestjs/core';
+import * as dotenv from 'dotenv';
+import { AppModule } from './app.module';
+import { PrismaService } from '@Prisma/services/prisma.service';
 
 dotenv.config();
 async function bootstrap() {

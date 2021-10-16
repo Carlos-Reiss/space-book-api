@@ -1,8 +1,9 @@
 import { User } from '.prisma/client';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { PrismaService } from '@Prisma/services/prisma.service';
 import { v4 as uuid } from 'uuid';
-import { PrismaService } from '../../../prisma/services/prisma.service';
+
 import {
   Context,
   createMockContext,

@@ -1,9 +1,9 @@
+import { PrismaService } from '@/prisma/services/prisma.service';
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '@/prisma/services/prisma.service';
 import { CreateUserDto, UpdateUserDto } from '../dto';
 import { UserEntity } from '../entities/user.entity';
 
@@ -11,7 +11,7 @@ import { UserEntity } from '../entities/user.entity';
 export class UsersService {
   constructor(readonly prisma: PrismaService) {}
 
-  async create(data: CreateUserDto): Promise<Omit<UserEntity, 'password'>> {
+  async create(data: CreateUserDto): Promise<UserEntity> {
     const userFindEmailExist = await this.prisma.user.findUnique({
       where: { email: data.email },
     });
@@ -28,10 +28,10 @@ export class UsersService {
         username: true,
       },
     });
-    return user;
+    return user as UserEntity;
   }
 
-  async findAll(): Promise<Omit<UserEntity, 'password'>[]> {
+  async findAll(): Promise<UserEntity[]> {
     const users = await this.prisma.user.findMany({
       where: {},
       select: {
@@ -40,10 +40,10 @@ export class UsersService {
         username: true,
       },
     });
-    return users;
+    return users as UserEntity[];
   }
 
-  async findOne(id: string): Promise<Omit<UserEntity, 'password'>> {
+  async findOne(id: string): Promise<UserEntity> {
     const user = await this.prisma.user.findUnique({
       where: {
         id,
@@ -58,13 +58,20 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('user not found in database');
     }
-    return user;
+    return user as UserEntity;
   }
 
-  async update(
-    id: string,
-    updateUserDto: UpdateUserDto,
-  ): Promise<Omit<UserEntity, 'password'>> {
+  async findByEmail(email: string): Promise<UserEntity> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    return user as UserEntity;
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<UserEntity> {
     const findAndUser = await this.prisma.user.findUnique({
       where: { id },
     });
@@ -83,10 +90,10 @@ export class UsersService {
       },
     });
 
-    return user;
+    return user as UserEntity;
   }
 
-  async remove(id: string): Promise<Omit<UserEntity, 'password'>> {
+  async remove(id: string): Promise<UserEntity> {
     const findAndUser = await this.prisma.user.findUnique({
       where: { id },
     });
@@ -103,6 +110,6 @@ export class UsersService {
       },
     });
 
-    return user;
+    return user as UserEntity;
   }
 }
